@@ -23,13 +23,13 @@
         -- END
         -- GO
     -- Running Procedures
-        -- EXEC sp_Segment 'DATENAME(MM, Order_Date)'
-        -- EXEC sp_Segment 'Category'
-        -- EXEC sp_Segment 'Region'
-        -- EXEC sp_Segment 'Segment'
-        -- EXEC sp_Segment 'Ship_Mode'
-        -- EXEC sp_Segment 'State'
-        -- EXEC sp_Segment 'Sub_Category'
+        EXEC sp_Segment 'DATENAME(MM, Order_Date)'
+        EXEC sp_Segment 'Category'
+        EXEC sp_Segment 'Region'
+        EXEC sp_Segment 'Segment'
+        EXEC sp_Segment 'Ship_Mode'
+        EXEC sp_Segment 'State'
+        EXEC sp_Segment 'Sub_Category'
 
         -- SELECT * FROM eCommerce
         -- WHERE Product_Name LIKE 'Logitech%'
@@ -102,3 +102,44 @@
         FROM vw_PercRetention
         ORDER BY MonthNum
 --
+SELECT SUM(Profit)
+FROM eCommerce
+
+SELECT MonthNum, c.TxnMonth, Total
+    -- CONVERT(DEC(10,2),[1]*100.0/[Total]) [Jan],
+    -- CONVERT(DEC(10,2),[2]*100.0/[Total]) [Feb],
+    -- CONVERT(DEC(10,2),[3]*100.0/[Total]) [Mar],
+    -- CONVERT(DEC(10,2),[4]*100.0/[Total]) [Apr],
+    -- CONVERT(DEC(10,2),[5]*100.0/[Total]) [May],
+    -- CONVERT(DEC(10,2),[6]*100.0/[Total]) [Jun],
+    -- CONVERT(DEC(10,2),[7]*100.0/[Total]) [Jul],
+    -- CONVERT(DEC(10,2),[8]*100.0/[Total]) [Aug],
+    -- CONVERT(DEC(10,2),[9]*100.0/[Total]) [Sept],
+    -- CONVERT(DEC(10,2),[10]*100.0/[Total]) [Oct],
+    -- CONVERT(DEC(10,2),[11]*100.0/[Total]) [Nov],
+    -- CONVERT(DEC(10,2),[12]*100.0/[Total]) [Dec]
+FROM vw_CxRetention2 c
+LEFT JOIN 
+    (SELECT DATENAME(MM, [Order_Date]) month, COUNT(DISTINCT Customer_ID) [Total]
+     FROM vw_FirstTxn 
+     GROUP BY DATENAME(MM, [Order_Date])) q
+ON c.TxnMonth = q.[month]
+ORDER BY MonthNum
+
+SELECT DATENAME(MM, [Order_Date]) Month, 
+CONVERT(DEC(10,2),(SELECT COUNT(DISTINCT Customer_ID) FROM vw_FirstTxn q 
+                   WHERE DATENAME(MM, v.[Order_Date]) = DATENAME(MM, q.[1st_Transaction])
+                   GROUP BY DATENAME(MM, q.[1st_Transaction])) * 100.0 / COUNT(DISTINCT Customer_ID)) [Total Cx]
+FROM vw_FirstTxn v
+GROUP BY DATEPART(MM, [Order_Date]), DATENAME(MM, [Order_Date])
+ORDER BY DATEPART(MM, [Order_Date])
+
+
+SELECT DATENAME(MM, [Order_Date]) Month, 
+(SELECT COUNT(DISTINCT Customer_ID) FROM vw_FirstTxn q 
+ WHERE DATENAME(MM, v.[Order_Date]) = DATENAME(MM, q.[1st_Transaction])
+ GROUP BY DATENAME(MM, q.[1st_Transaction])) rx_cx, COUNT(DISTINCT Customer_ID) [Total Cx]
+FROM vw_FirstTxn v
+GROUP BY DATEPART(MM, [Order_Date]), DATENAME(MM, [Order_Date])
+ORDER BY DATEPART(MM, [Order_Date])
+
