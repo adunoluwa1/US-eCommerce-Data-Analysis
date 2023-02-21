@@ -75,7 +75,7 @@
             -- FROM vw_CxRetention
             -- -- ORDER BY MonthNum
         
-        -- Customer Retention 2
+        -- Customer Retention 2 [Alternatively]
             -- CREATE OR ALTER VIEW vw_CxRetention2 AS
             -- SELECT *
             -- FROM
@@ -88,7 +88,38 @@
             --     SUM(Customers)
             --     FOR Month IN ("1","2","3","4","5","6","7","8","9","10","11","12") 
             -- ) AS p    
-            -- -- ORDER BY MonthNum    
+            -- -- ORDER BY MonthNum   
+
+        -- Monthly Retention Rate
+            -- CREATE OR ALTER VIEW vw_MonthlyRetention AS                                                                                             
+            -- WITH CumSum_CTE AS
+            --  (SELECT Num, [Month],SUM([Total Cx]) OVER(ORDER BY Num) CumSum_Cx
+            --  FROM
+            --     (SELECT DATEPART(MM, [1st_Transaction]) Num,
+            --             DATENAME(MM, [1st_Transaction]) Month, 
+            --             COUNT(DISTINCT Customer_ID) [Total Cx]
+            --     FROM vw_FirstTxn v
+            --     GROUP BY DATEPART(MM, [1st_Transaction]), DATENAME(MM, [1st_Transaction]))Q),
+            -- NewCx_CTE AS
+            --  (SELECT DATENAME(MM, [1st_Transaction]) Month, 
+            --          COUNT(DISTINCT Customer_ID) New_Cx 
+            --  FROM vw_FirstTxn 
+            --  GROUP BY DATENAME(MM, [1st_Transaction])),
+            -- TotalCx_CTE AS
+            --  (SELECT DATENAME(MM,Order_Date) Month,
+            --          COUNT(DISTINCT Customer_ID) TotalCx
+            --   FROM vw_FirstTxn
+            --   GROUP BY DATENAME(MM, Order_Date))
+            -- --
+            --  SELECT c.[Month], TotalCx, New_Cx, CumSum_Cx, (TotalCx - New_Cx) Returning_Cx,
+            --  ISNULL(LAG(CumSum_Cx,1) OVER(ORDER BY Num),0) Current_Cx,
+            --  CONVERT(DEC(10,2),(TotalCx - New_Cx)* 100.0/ISNULL(LAG(CumSum_Cx,1) OVER(ORDER BY Num),1)) [Retention Rate %] 
+            --  FROM CumSum_CTE c
+            --  LEFT JOIN NewCx_CTE n
+            --  ON c.[Month] = n.[Month] 
+            --  LEFT JOIN TotalCx_CTE t
+            --  ON c.[Month] = t.[Month] 
+            -- --  ORDER BY Num 
     -- Cohort Analysis
         SELECT *
         FROM vw_CxRetention
@@ -101,45 +132,11 @@
         SELECT *
         FROM vw_PercRetention
         ORDER BY MonthNum
+
+        SELECT Month, [Retention Rate %]
+        FROM vw_MonthlyRetention
 --
-SELECT SUM(Profit)
-FROM eCommerce
-
-SELECT MonthNum, c.TxnMonth, Total
-    -- CONVERT(DEC(10,2),[1]*100.0/[Total]) [Jan],
-    -- CONVERT(DEC(10,2),[2]*100.0/[Total]) [Feb],
-    -- CONVERT(DEC(10,2),[3]*100.0/[Total]) [Mar],
-    -- CONVERT(DEC(10,2),[4]*100.0/[Total]) [Apr],
-    -- CONVERT(DEC(10,2),[5]*100.0/[Total]) [May],
-    -- CONVERT(DEC(10,2),[6]*100.0/[Total]) [Jun],
-    -- CONVERT(DEC(10,2),[7]*100.0/[Total]) [Jul],
-    -- CONVERT(DEC(10,2),[8]*100.0/[Total]) [Aug],
-    -- CONVERT(DEC(10,2),[9]*100.0/[Total]) [Sept],
-    -- CONVERT(DEC(10,2),[10]*100.0/[Total]) [Oct],
-    -- CONVERT(DEC(10,2),[11]*100.0/[Total]) [Nov],
-    -- CONVERT(DEC(10,2),[12]*100.0/[Total]) [Dec]
-FROM vw_CxRetention2 c
-LEFT JOIN 
-    (SELECT DATENAME(MM, [Order_Date]) month, COUNT(DISTINCT Customer_ID) [Total]
-     FROM vw_FirstTxn 
-     GROUP BY DATENAME(MM, [Order_Date])) q
-ON c.TxnMonth = q.[month]
-ORDER BY MonthNum
-
-SELECT DATENAME(MM, [Order_Date]) Month, 
-CONVERT(DEC(10,2),(SELECT COUNT(DISTINCT Customer_ID) FROM vw_FirstTxn q 
-                   WHERE DATENAME(MM, v.[Order_Date]) = DATENAME(MM, q.[1st_Transaction])
-                   GROUP BY DATENAME(MM, q.[1st_Transaction])) * 100.0 / COUNT(DISTINCT Customer_ID)) [Total Cx]
-FROM vw_FirstTxn v
-GROUP BY DATEPART(MM, [Order_Date]), DATENAME(MM, [Order_Date])
-ORDER BY DATEPART(MM, [Order_Date])
 
 
-SELECT DATENAME(MM, [Order_Date]) Month, 
-(SELECT COUNT(DISTINCT Customer_ID) FROM vw_FirstTxn q 
- WHERE DATENAME(MM, v.[Order_Date]) = DATENAME(MM, q.[1st_Transaction])
- GROUP BY DATENAME(MM, q.[1st_Transaction])) rx_cx, COUNT(DISTINCT Customer_ID) [Total Cx]
-FROM vw_FirstTxn v
-GROUP BY DATEPART(MM, [Order_Date]), DATENAME(MM, [Order_Date])
-ORDER BY DATEPART(MM, [Order_Date])
+--
 
