@@ -122,26 +122,27 @@
             -- --  ORDER BY Num
         -- Total Cohort Retention Rate
             -- CREATE OR ALTER VIEW vw_TotalCohorts AS
-            -- SELECT * FROM
-            --     (SELECT  
-            --     AVG([0]) [0],
-            --     AVG([1]) [1],
-            --     AVG([2]) [2],
-            --     AVG([3]) [3],
-            --     AVG([4]) [4],
-            --     AVG([5]) [5],
-            --     AVG([6]) [6],
-            --     AVG([7]) [7],
-            --     AVG([8]) [8],
-            --     AVG([9]) [9],
-            --     AVG([10]) [10],
-            --     AVG([11]) [11]
-            --     FROM vw_PercRetention) Q
-            -- UNPIVOT(
-            --    Rate FOR Month_Diff IN(
-            --        [0],[1],[2],[3],[4],[5],[6],[7],[8],[9],[10],[11]
-            --    ) 
-            -- ) AS UNPVT
+            -- SELECT CONVERT(INT,Month_Diff) Month_Diff, Rate
+            -- FROM
+            --     (SELECT * FROM
+            --         (SELECT  
+            --         AVG([0]) [0],
+            --         AVG([1]) [1],
+            --         AVG([2]) [2],
+            --         AVG([3]) [3],
+            --         AVG([4]) [4],
+            --         AVG([5]) [5],
+            --         AVG([6]) [6],
+            --         AVG([7]) [7],
+            --         AVG([8]) [8],
+            --         AVG([9]) [9],
+            --         AVG([10]) [10],
+            --         AVG([11]) [11]
+            --         FROM vw_PercRetention) Q
+            --     UNPIVOT(
+            --     Rate FOR Month_Diff IN
+            --     ([0],[1],[2],[3],[4],[5],[6],[7],[8],[9],[10],[11]) 
+            --     ) AS UNPVT) subQ
  
     -- Cohort Analysis
         SELECT *
