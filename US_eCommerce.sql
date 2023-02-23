@@ -111,7 +111,7 @@
             --   FROM vw_FirstTxn
             --   GROUP BY DATENAME(MM, Order_Date))
             -- --
-            --  SELECT c.[Month], TotalCx, New_Cx, (TotalCx - New_Cx) Returning_Cx, CumSum_Cx,
+            --  SELECT Num, c.[Month], TotalCx, New_Cx, (TotalCx - New_Cx) Returning_Cx, CumSum_Cx,
             --  ISNULL(LAG(CumSum_Cx,1) OVER(ORDER BY Num),0) Current_Cx,
             --  CONVERT(DEC(10,2),(TotalCx - New_Cx)* 100.0/ISNULL(LAG(CumSum_Cx,1) OVER(ORDER BY Num),1)) [Retention Rate %] 
             --  FROM CumSum_CTE c
@@ -119,7 +119,7 @@
             --  ON c.[Month] = n.[Month] 
             --  LEFT JOIN TotalCx_CTE t
             --  ON c.[Month] = t.[Month] 
-            -- --  ORDER BY Num
+            --  ORDER BY Num
         -- Total Cohort Retention Rate
             -- CREATE OR ALTER VIEW vw_TotalCohorts AS
             -- SELECT CONVERT(INT,Month_Diff) Month_Diff, Rate
@@ -158,7 +158,6 @@
     -- Monthly Retention Rates
         SELECT *-- Month, [Retention Rate %]
         FROM vw_MonthlyRetention
-    
 
 
 
